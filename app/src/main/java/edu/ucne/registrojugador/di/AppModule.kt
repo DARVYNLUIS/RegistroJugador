@@ -60,5 +60,6 @@ object AppModule {
     fun provideJugadorRepository(jugadorDao: JugadorDao): JugadorRepository{
         return JugadorRepositoryImpl(jugadorDao)
     }
+
 }
 

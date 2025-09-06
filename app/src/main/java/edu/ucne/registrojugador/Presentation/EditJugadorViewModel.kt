@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.registrojugador.domain.jugador.model.Jugador
 import edu.ucne.registrojugador.domain.jugador.usecase.DeleteJugadorUseCase
 import edu.ucne.registrojugador.domain.jugador.usecase.GetJugadorUseCase
+import edu.ucne.registrojugador.domain.jugador.usecase.ExistePorNombreUseCase
 import edu.ucne.registrojugador.domain.jugador.usecase.UpsertJugadorUseCase
 import edu.ucne.registrojugador.domain.jugador.usecase.validateJugadorUi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +20,8 @@ import javax.inject.Inject
 class EditJugadorViewModel @Inject constructor(
     private val getJugadorUseCase: GetJugadorUseCase,
     private val upsertJugadorUseCase: UpsertJugadorUseCase,
-    private val deleteJugadorUseCase: DeleteJugadorUseCase
+    private val deleteJugadorUseCase: DeleteJugadorUseCase,
+    private val existePorNombreUseCase: ExistePorNombreUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(EditJugadorUiState())
@@ -63,6 +65,7 @@ class EditJugadorViewModel @Inject constructor(
         val nombres = state.value.nombres
         val partidas = state.value.partidas
         val validation = validateJugadorUi(nombres, partidas)
+
         if (!validation.isValid) {
             _state.update {
                 it.copy(
@@ -72,13 +75,41 @@ class EditJugadorViewModel @Inject constructor(
             }
             return
         }
+
         viewModelScope.launch {
             _state.update { it.copy(isSaving = true) }
+
+            // 🔎 Verificar si ya existe un jugador con ese nombre
+            val duplicado = existePorNombreUseCase(nombres)
+
+            if (duplicado) {
+                if (state.value.isNew) {
+                    _state.update {
+                        it.copy(
+                            isSaving = false,
+                            nombresError = "El nombre ya existe"
+                        )
+                    }
+                    return@launch
+                }
+
+                val jugadorExistente = getJugadorUseCase(state.value.jugadorId ?: 0)
+                if (jugadorExistente != null && jugadorExistente.nombres != nombres) {
+                    _state.update {
+                        it.copy(
+                            isSaving = false,
+                            nombresError = "El nombre existe"
+                        )
+                    }
+                    return@launch
+                }
+            }
             val jugador = Jugador(
                 jugadorId = state.value.jugadorId ?: 0,
                 nombres = nombres,
                 partidas = partidas.toInt()
             )
+
             val result = upsertJugadorUseCase(jugador)
             result.onSuccess { newId ->
                 _state.update { it.copy(isSaving = false, saved = true, jugadorId = newId) }
