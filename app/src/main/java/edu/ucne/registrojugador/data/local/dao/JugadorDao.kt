@@ -1,4 +1,4 @@
-package edu.ucne.registrojugador.data.local.entities.dao
+package edu.ucne.registrojugador.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Delete

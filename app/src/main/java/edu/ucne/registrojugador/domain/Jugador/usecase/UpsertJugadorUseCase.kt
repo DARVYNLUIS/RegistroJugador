@@ -13,9 +13,9 @@ class UpsertJugadorUseCase(
             .first() // Obtener el valor actual de la lista de jugadores
 
         // Validar jugador
-        val validationResult = validateJugador(jugador, existingJugadores)
+        val validationResult = validateJugadorUi(jugador.nombres, jugador.partidas.toString())
         if (!validationResult.isValid) {
-            return Result.failure(IllegalArgumentException(validationResult.error))
+            return Result.failure(IllegalArgumentException(validationResult.nombresError))
         }
 
         // Guardar jugador usando el repositorio

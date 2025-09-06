@@ -10,87 +10,72 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.ucne.registrojugador.domain.jugador.model.Jugador
+import edu.ucne.registrojugador.presentation.jugador.edit.EditJugadorUiEvent
+import edu.ucne.registrojugador.presentation.jugador.edit.EditJugadorViewModel
+import edu.ucne.registrojugador.presentation.list.ListJugadorUiEvent
+import edu.ucne.registrojugador.presentation.list.ListJugadorUiState
+import edu.ucne.registrojugador.presentation.list.ListJugadorViewModel
 
-// UI State
-data class ListJugadorUiState(
-    val jugadores: List<Jugador> = emptyList(),
-    val isLoading: Boolean = false
-)
 
-// UI Events
-sealed interface ListJugadorUiEvent {
-    object CreateNew : ListJugadorUiEvent
-    data class Edit(val jugadorId: Int) : ListJugadorUiEvent
-    data class Delete(val jugadorId: Int) : ListJugadorUiEvent
-}
-
-// Screen
 @Composable
 fun ListJugadorScreen(
-    viewModel: ListJugadorViewModel = hiltViewModel()
+    viewModel: ListJugadorViewModel = hiltViewModel(),
+    viewModelCrear: EditJugadorViewModel = hiltViewModel()
+
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    ListJugadorBody(state, viewModel::onEvent)
+    ListJugadorBody(state, viewModel::onEvent, viewModelCrear::onEvent)
 }
 
-// Body
 @Composable
 fun ListJugadorBody(
     state: ListJugadorUiState,
-    onEvent: (ListJugadorUiEvent) -> Unit
+    onEvent: (ListJugadorUiEvent) -> Unit,
+    onEventCrear: (EditJugadorUiEvent) -> Unit
 ) {
-    Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { onEvent(ListJugadorUiEvent.CreateNew) },
-                modifier = Modifier.testTag("fab_add")
-            ) {
-                Text("+")
-            }
-        }
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-        ) {
-            if (state.isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .testTag("loading")
-                )
-            }
 
-            LazyColumn(
+    Box(
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxSize()
+    ) {
+        if (state.isLoading) {
+            CircularProgressIndicator(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-                    .testTag("jugador_list")
-            ) {
-                items(state.jugadores) { jugador ->
-                    JugadorCard(
-                        jugador = jugador,
-                        onClick = { onEvent(ListJugadorUiEvent.Edit(jugador.jugadorId)) },
-                        onDelete = { onEvent(ListJugadorUiEvent.Delete(jugador.jugadorId)) }
-                    )
-                }
+                    .align(Alignment.Center)
+                    .testTag("loading")
+            )
+        }
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .testTag("jugador_list")
+        ) {
+            items(state.jugadores) { jugador ->
+                JugadorCard(
+                    jugador = jugador,
+                    onClick = { onEvent(ListJugadorUiEvent.Edit(jugador.jugadorId)) },
+                    onDelete = { onEvent(ListJugadorUiEvent.Delete(jugador.jugadorId)) },
+                    load = {onEventCrear(EditJugadorUiEvent.Load(jugador.jugadorId))}
+                )
             }
         }
     }
+
 }
 
-// Card
 @Composable
 fun JugadorCard(
     jugador: Jugador,
     onClick: (Jugador) -> Unit,
     onDelete: (Int) -> Unit,
+    load: (Int) -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -109,6 +94,12 @@ fun JugadorCard(
                 Text(jugador.nombres, style = MaterialTheme.typography.titleMedium)
                 Text("Partidas: ${jugador.partidas}")
             }
+
+            TextButton(
+                onClick = { load(jugador.jugadorId) },
+                modifier = Modifier.testTag("delete_button_${jugador.jugadorId}")
+            ) { Text("editar") }
+
             TextButton(
                 onClick = { onDelete(jugador.jugadorId) },
                 modifier = Modifier.testTag("delete_button_${jugador.jugadorId}")
@@ -117,16 +108,4 @@ fun JugadorCard(
     }
 }
 
-// Preview
-@Preview
-@Composable
-private fun ListJugadorBodyPreview() {
-    val jugadores = listOf(
-        Jugador(jugadorId = 1, nombres = "Juan", partidas = 5),
-        Jugador(jugadorId = 2, nombres = "María", partidas = 10)
-    )
-    val state = ListJugadorUiState(jugadores = jugadores)
-    MaterialTheme {
-        ListJugadorBody(state) {}
-    }
-}
+

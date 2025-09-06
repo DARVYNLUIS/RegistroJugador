@@ -1,10 +1,9 @@
-package edu.ucne.registrojugador.data
+package edu.ucne.registrojugador.data.local.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import edu.ucne.registrojugador.data.local.entities.JugadorEntity
-import edu.ucne.registrojugador.data.local.entities.dao.JugadorDao
-
+import edu.ucne.registrojugador.data.local.dao.JugadorDao
 
 @Database(
     entities = [

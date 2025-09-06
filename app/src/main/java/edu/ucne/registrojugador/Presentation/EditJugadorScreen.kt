@@ -28,10 +28,8 @@ fun EditJugadorBody(
     state: EditJugadorUiState,
     onEvent: (EditJugadorUiEvent) -> Unit
 ) {
-    Scaffold { padding ->
         Column(
             modifier = Modifier
-                .padding(padding)
                 .padding(16.dp)
         ) {
             OutlinedTextField(
@@ -92,7 +90,6 @@ fun EditJugadorBody(
             }
         }
     }
-}
 
 @Preview
 @Composable

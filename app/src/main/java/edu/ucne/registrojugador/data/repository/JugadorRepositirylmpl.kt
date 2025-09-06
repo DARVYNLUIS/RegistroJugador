@@ -1,6 +1,6 @@
-package edu.ucne.registrojugador.data.local.repository
+package edu.ucne.registrojugador.data.repository
 
-import edu.ucne.registrojugador.data.local.entities.dao.JugadorDao
+import edu.ucne.registrojugador.data.local.dao.JugadorDao
 import edu.ucne.registrojugador.data.local.mapper.toDomain
 import edu.ucne.registrojugador.data.local.mapper.toEntity
 import edu.ucne.registrojugador.domain.jugador.model.Jugador
@@ -28,3 +28,4 @@ class JugadorRepositoryImpl(
         dao.deleteById(id)
     }
 }
+
