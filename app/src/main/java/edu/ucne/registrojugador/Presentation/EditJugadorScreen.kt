@@ -5,97 +5,94 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 
 @Composable
 fun EditJugadorScreen(
-    viewModel: EditJugadorViewModel = hiltViewModel()
+    jugadorId: Int? = null,
+    viewModel: EditJugadorViewModel = hiltViewModel(),
+    onBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    EditJugadorBody(
-        state = state,
-        onEvent = viewModel::onEvent
-    )
-}
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
-@Composable
-fun EditJugadorBody(
-    state: EditJugadorUiState,
-    onEvent: (EditJugadorUiEvent) -> Unit
-) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-        ) {
-            OutlinedTextField(
-                value = state.nombres,
-                onValueChange = { onEvent(EditJugadorUiEvent.NombresChanged(it)) },
-                label = { Text("Nombre del Jugador") },
-                isError = state.nombresError != null,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("input_nombres")
-            )
-            if (state.nombresError != null) {
-                Text(
-                    text = state.nombresError,
-                    color = MaterialTheme.colorScheme.error
-                )
+    // Cargar datos si es edición
+    LaunchedEffect(jugadorId) {
+        jugadorId?.let { viewModel.onEvent(EditJugadorUiEvent.Load(it)) }
+    }
+
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(16.dp)) {
+
+        // Campo Nombres
+        OutlinedTextField(
+            value = state.nombres,
+            onValueChange = { viewModel.onEvent(EditJugadorUiEvent.NombresChanged(it)) },
+            label = { Text("Nombre del Jugador") },
+            isError = state.nombresError != null,
+            modifier = Modifier.fillMaxWidth()
+        )
+        state.nombresError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Campo Partidas (Int)
+        OutlinedTextField(
+            value = state.partidas?.toString() ?: "",
+            onValueChange = { text ->
+                val partidas = text.toIntOrNull() // convierte a Int si es posible
+                viewModel.onEvent(EditJugadorUiEvent.PartidasChanged(partidas))
+            },
+            label = { Text("Partidas Jugadas") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            isError = state.partidasError != null,
+            modifier = Modifier.fillMaxWidth()
+        )
+        state.partidasError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Botones Guardar y Eliminar
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Button(
+                onClick = { viewModel.onEvent(EditJugadorUiEvent.Save) },
+                enabled = !state.isSaving,
+                modifier = Modifier.weight(1f)
+            ) { Text("Guardar") }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            if (!state.isNew) {
+                OutlinedButton(
+                    onClick = { viewModel.onEvent(EditJugadorUiEvent.Delete) },
+                    enabled = !state.isDeleting,
+                    modifier = Modifier.weight(1f)
+                ) { Text("Eliminar") }
             }
+        }
 
-            Spacer(Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            OutlinedTextField(
-                value = state.partidas,
-                onValueChange = { onEvent(EditJugadorUiEvent.PartidasChanged(it)) },
-                label = { Text("Partidas Jugadas") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                isError = state.partidasError != null,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("input_partidas")
-            )
-            if (state.partidasError != null) {
-                Text(
-                    text = state.partidasError,
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
+        // Botón Volver
+        OutlinedButton(
+            onClick = onBack,
+            modifier = Modifier.fillMaxWidth()
+        ) { Text("Ver Lista de Jugadores") }
+    }
 
-            Spacer(Modifier.height(16.dp))
-
-            Row {
-                Button(
-                    onClick = { onEvent(EditJugadorUiEvent.Save) },
-                    enabled = !state.isSaving,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("btn_guardar")
-                ) { Text("Guardar") }
-
-                Spacer(Modifier.width(8.dp))
-
-                if (!state.isNew) {
-                    OutlinedButton(
-                        onClick = { onEvent(EditJugadorUiEvent.Delete) },
-                        enabled = !state.isDeleting,
-                        modifier = Modifier.testTag("btn_eliminar")
-                    ) { Text("Eliminar") }
-                }
-            }
+    // Snackbar para mensajes de estado
+    LaunchedEffect(state.message) {
+        state.message?.let {
+            scope.launch { snackbarHostState.showSnackbar(it) }
+            viewModel.clearMessage()
         }
     }
 
-@Preview
-@Composable
-private fun EditJugadorBodyPreview() {
-    val state = EditJugadorUiState()
-    MaterialTheme {
-        EditJugadorBody(state = state) {}
-    }
+    SnackbarHost(hostState = snackbarHostState, modifier = Modifier.padding(8.dp))
 }

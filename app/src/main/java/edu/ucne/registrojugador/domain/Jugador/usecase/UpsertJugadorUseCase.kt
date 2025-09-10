@@ -7,18 +7,36 @@ import edu.ucne.registrojugador.domain.jugador.repository.JugadorRepository
 class UpsertJugadorUseCase(
     private val repository: JugadorRepository
 ) {
-    suspend operator fun invoke(jugador: Jugador): Result<Int> {
-        // Obtener todos los jugadores existentes para validar duplicados
-        val existingJugadores = repository.observeJugadores()
-            .first() // Obtener el valor actual de la lista de jugadores
 
-        // Validar jugador
-        val validationResult = validateJugadorUi(jugador.nombres, jugador.partidas.toString())
-        if (!validationResult.isValid) {
-            return Result.failure(IllegalArgumentException(validationResult.nombresError))
+    suspend operator fun invoke(jugador: Jugador): Result<Int> {
+        val existingJugadores = repository.observeJugadores().first()
+
+        val duplicate = existingJugadores.any {
+            it.nombres.equals(jugador.nombres, ignoreCase = true)
+                    && it.jugadorId != jugador.jugadorId
         }
 
-        // Guardar jugador usando el repositorio
+        if (duplicate) {
+            return Result.failure(IllegalArgumentException("El nombre ya existe"))
+        }
+
         return runCatching { repository.upsert(jugador) }
+    }
+
+    // Obtener un jugador por su ID
+    suspend fun getJugadorById(jugadorId: Int): Jugador? {
+        return repository.observeJugadores()
+            .first()
+            .firstOrNull { it.jugadorId == jugadorId }
+    }
+
+    suspend fun checkDuplicate(jugador: Jugador): Result<Unit> {
+        val existingJugadores = repository.observeJugadores().first()
+        val duplicate = existingJugadores.any {
+            it.nombres.equals(jugador.nombres, ignoreCase = true)
+                    && it.jugadorId != jugador.jugadorId
+        }
+        return if (duplicate) Result.failure(IllegalArgumentException("El nombre ya existe"))
+        else Result.success(Unit)
     }
 }

@@ -1,93 +1,83 @@
 package edu.ucne.registrojugador.presentation.jugador.list
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.ucne.registrojugador.domain.jugador.model.Jugador
-import edu.ucne.registrojugador.presentation.jugador.edit.EditJugadorUiEvent
-import edu.ucne.registrojugador.presentation.jugador.edit.EditJugadorViewModel
 import edu.ucne.registrojugador.presentation.list.ListJugadorUiEvent
 import edu.ucne.registrojugador.presentation.list.ListJugadorUiState
 import edu.ucne.registrojugador.presentation.list.ListJugadorViewModel
 
-
 @Composable
 fun ListJugadorScreen(
     viewModel: ListJugadorViewModel = hiltViewModel(),
-    viewModelCrear: EditJugadorViewModel = hiltViewModel()
-
+    onNavigateToEdit: (Int) -> Unit,
+    onNavigateToCreate: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    ListJugadorBody(state, viewModel::onEvent, viewModelCrear::onEvent)
+    ListJugadorBody(
+        state = state,
+        onNavigateToEdit = onNavigateToEdit,
+        onNavigateToCreate = onNavigateToCreate,
+        onEvent = viewModel::onEvent
+    )
 }
 
 @Composable
 fun ListJugadorBody(
     state: ListJugadorUiState,
-    onEvent: (ListJugadorUiEvent) -> Unit,
-    onEventCrear: (EditJugadorUiEvent) -> Unit
+    onNavigateToEdit: (Int) -> Unit,
+    onNavigateToCreate: () -> Unit,
+    onEvent: (ListJugadorUiEvent) -> Unit
 ) {
+    Column(modifier = Modifier.fillMaxSize().padding(8.dp)) {
 
-    Box(
-        modifier = Modifier
-            .padding(8.dp)
-            .fillMaxSize()
-    ) {
-        if (state.isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .testTag("loading")
-            )
+        Button(
+            onClick = onNavigateToCreate,
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+        ) {
+            Text("Crear Jugador")
         }
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .testTag("jugador_list")
-        ) {
-            items(state.jugadores) { jugador ->
-                JugadorCard(
-                    jugador = jugador,
-                    onClick = { onEvent(ListJugadorUiEvent.Edit(jugador.jugadorId)) },
-                    onDelete = { onEvent(ListJugadorUiEvent.Delete(jugador.jugadorId)) },
-                    load = {onEventCrear(EditJugadorUiEvent.Load(jugador.jugadorId))}
-                )
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (state.isLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            }
+
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                items(state.jugadores) { jugador ->
+                    JugadorCard(
+                        jugador = jugador,
+                        onEdit = { onNavigateToEdit(jugador.jugadorId) },
+                        onDelete = { onEvent(ListJugadorUiEvent.Delete(jugador.jugadorId)) }
+                    )
+                }
             }
         }
     }
-
 }
 
 @Composable
 fun JugadorCard(
     jugador: Jugador,
-    onClick: (Jugador) -> Unit,
-    onDelete: (Int) -> Unit,
-    load: (Int) -> Unit
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
-            .testTag("jugador_card_${jugador.jugadorId}")
-            .clickable { onClick(jugador) }
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
@@ -95,17 +85,8 @@ fun JugadorCard(
                 Text("Partidas: ${jugador.partidas}")
             }
 
-            TextButton(
-                onClick = { load(jugador.jugadorId) },
-                modifier = Modifier.testTag("delete_button_${jugador.jugadorId}")
-            ) { Text("Editar") }
-
-            TextButton(
-                onClick = { onDelete(jugador.jugadorId) },
-                modifier = Modifier.testTag("delete_button_${jugador.jugadorId}")
-            ) { Text("Eliminar") }
+            TextButton(onClick = onEdit) { Text("Editar") }
+            TextButton(onClick = onDelete) { Text("Eliminar") }
         }
     }
 }
-
-

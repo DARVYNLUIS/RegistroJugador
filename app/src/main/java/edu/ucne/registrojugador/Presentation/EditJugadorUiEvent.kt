@@ -1,9 +1,9 @@
 package edu.ucne.registrojugador.presentation.jugador.edit
 
-sealed interface EditJugadorUiEvent {
-    data class Load(val id: Int?) : EditJugadorUiEvent
-    data class NombresChanged(val value: String) : EditJugadorUiEvent
-    data class PartidasChanged(val value: String) : EditJugadorUiEvent
-    data object Save : EditJugadorUiEvent
-    data object Delete : EditJugadorUiEvent
+sealed class EditJugadorUiEvent {
+    data class NombresChanged(val nombres: String) : EditJugadorUiEvent()
+    data class PartidasChanged(val partidas: Int?) : EditJugadorUiEvent()
+    data class Load(val jugadorId: Int) : EditJugadorUiEvent()
+    object Save : EditJugadorUiEvent()
+    object Delete : EditJugadorUiEvent()
 }

@@ -30,16 +30,28 @@ class ListJugadorViewModel @Inject constructor(
         when (event) {
             is ListJugadorUiEvent.Load -> observe()
             is ListJugadorUiEvent.Delete -> onDelete(event.jugadorId)
-            ListJugadorUiEvent.CreateNew -> _state.update { it.copy(navigateToCreate = true) }
-            is ListJugadorUiEvent.Edit -> _state.update { it.copy(navigateToEditId = event.jugadorId) }
-            is ListJugadorUiEvent.ShowMessage -> _state.update { it.copy(message = event.message) }
+            ListJugadorUiEvent.CreateNew -> {
+                _state.update { it.copy(navigateToCreate = true) }
+            }
+            is ListJugadorUiEvent.Edit -> {
+                _state.update { it.copy(navigateToEditId = event.jugadorId) }
+            }
+            is ListJugadorUiEvent.ShowMessage -> {
+                _state.update { it.copy(message = event.message) }
+            }
         }
     }
 
     private fun observe() {
         viewModelScope.launch {
             observeJugadoresUseCase().collectLatest { list ->
-                _state.update { it.copy(isLoading = false, jugadores = list, message = null) }
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        jugadores = list,
+                        message = null
+                    )
+                }
             }
         }
     }
@@ -52,6 +64,15 @@ class ListJugadorViewModel @Inject constructor(
     }
 
     fun onNavigationHandled() {
-        _state.update { it.copy(navigateToCreate = false, navigateToEditId = null) }
+        _state.update {
+            it.copy(
+                navigateToCreate = false,
+                navigateToEditId = null
+            )
+        }
+    }
+
+    fun onMessageShown() {
+        _state.update { it.copy(message = null) }
     }
 }

@@ -5,10 +5,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.registrojugador.domain.jugador.model.Jugador
 import edu.ucne.registrojugador.domain.jugador.usecase.DeleteJugadorUseCase
-import edu.ucne.registrojugador.domain.jugador.usecase.GetJugadorUseCase
-import edu.ucne.registrojugador.domain.jugador.usecase.ExistePorNombreUseCase
 import edu.ucne.registrojugador.domain.jugador.usecase.UpsertJugadorUseCase
-import edu.ucne.registrojugador.domain.jugador.usecase.validateJugadorUi
+import edu.ucne.registrojugador.presentation.ValidationResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,10 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EditJugadorViewModel @Inject constructor(
-    private val getJugadorUseCase: GetJugadorUseCase,
     private val upsertJugadorUseCase: UpsertJugadorUseCase,
-    private val deleteJugadorUseCase: DeleteJugadorUseCase,
-    private val existePorNombreUseCase: ExistePorNombreUseCase
+    private val deleteJugadorUseCase: DeleteJugadorUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(EditJugadorUiState())
@@ -29,48 +25,63 @@ class EditJugadorViewModel @Inject constructor(
 
     fun onEvent(event: EditJugadorUiEvent) {
         when (event) {
-            is EditJugadorUiEvent.Load -> onLoad(event.id)
-            is EditJugadorUiEvent.NombresChanged -> _state.update {
-                it.copy(nombres = event.value, nombresError = null)
-            }
-            is EditJugadorUiEvent.PartidasChanged -> _state.update {
-                it.copy(partidas = event.value, partidasError = null)
-            }
-            EditJugadorUiEvent.Save -> onSave()
-            EditJugadorUiEvent.Delete -> onDelete()
+            is EditJugadorUiEvent.NombresChanged ->
+                _state.update { it.copy(nombres = event.nombres, nombresError = null) }
+
+            is EditJugadorUiEvent.PartidasChanged ->
+                _state.update { it.copy(partidas = event.partidas, partidasError = null) }
+
+            is EditJugadorUiEvent.Load ->
+                loadJugador(event.jugadorId)
+
+            EditJugadorUiEvent.Save -> saveJugador()
+            EditJugadorUiEvent.Delete -> deleteJugador()
         }
     }
 
-    private fun onLoad(id: Int?) {
-        if (id == null || id == 0) {
-            _state.update { it.copy(isNew = true, jugadorId = null) }
-            return
-        }
+    private fun loadJugador(jugadorId: Int) {
         viewModelScope.launch {
-            val jugador = getJugadorUseCase(id)
-            jugador?.let {
-                _state.update {
-                    it.copy(
-                        isNew = false,
-                        jugadorId = jugador.jugadorId,
-                        nombres = jugador.nombres,
-                        partidas = jugador.partidas.toString()
-                    )
+            if (jugadorId == 0) {
+                // Nuevo jugador
+                _state.update { it.copy(isNew = true, jugadorId = null) }
+            } else {
+                // Cargar jugador existente
+                val jugador = upsertJugadorUseCase.getJugadorById(jugadorId)
+                jugador?.let {
+                    _state.update {
+                        it.copy(
+                            isNew = false,
+                            jugadorId = jugador.jugadorId,
+                            nombres = jugador.nombres,
+                            partidas = jugador.partidas
+                        )
+                    }
                 }
             }
         }
     }
 
-    private fun onSave() {
-        val nombres = state.value.nombres
-        val partidas = state.value.partidas
-        val validation = validateJugadorUi(nombres, partidas)
+    private fun validateNombres(nombres: String): ValidationResult =
+        if (nombres.isBlank()) ValidationResult(false, "El nombre es obligatorio")
+        else ValidationResult(true)
 
-        if (!validation.isValid) {
+    private fun validatePartidas(partidas: Int?): ValidationResult =
+        when {
+            partidas == null -> ValidationResult(false, "Las partidas son obligatorias")
+            partidas < 0 -> ValidationResult(false, "Las partidas son obligatorias")
+            else -> ValidationResult(true)
+        }
+
+    private fun saveJugador() {
+        val currentState = state.value
+        val nombresResult = validateNombres(currentState.nombres)
+        val partidasResult = validatePartidas(currentState.partidas)
+
+        if (!nombresResult.successful || !partidasResult.successful) {
             _state.update {
                 it.copy(
-                    nombresError = validation.nombresError,
-                    partidasError = validation.partidasError
+                    nombresError = nombresResult.errorMessage,
+                    partidasError = partidasResult.errorMessage
                 )
             }
             return
@@ -78,53 +89,60 @@ class EditJugadorViewModel @Inject constructor(
 
         viewModelScope.launch {
             _state.update { it.copy(isSaving = true) }
+            try {
+                // Crear jugador a guardar
+                val jugador = Jugador(
+                    jugadorId = currentState.jugadorId ?: 0,
+                    nombres = currentState.nombres,
+                    partidas = currentState.partidas!!
+                )
 
-            // 🔎 Verificar si ya existe un jugador con ese nombre
-            val duplicado = existePorNombreUseCase(nombres)
-
-            if (duplicado) {
-                if (state.value.isNew) {
+                // Verificar duplicado
+                val duplicateResult = upsertJugadorUseCase.checkDuplicate(jugador)
+                if (duplicateResult.isFailure) {
                     _state.update {
                         it.copy(
                             isSaving = false,
-                            nombresError = "El nombre ya existe"
+                            nombresError = duplicateResult.exceptionOrNull()?.message
                         )
                     }
                     return@launch
                 }
 
-                val jugadorExistente = getJugadorUseCase(state.value.jugadorId ?: 0)
-                if (jugadorExistente != null && jugadorExistente.nombres != nombres) {
-                    _state.update {
-                        it.copy(
-                            isSaving = false,
-                            nombresError = "El nombre existe"
-                        )
+                // Guardar jugador
+                upsertJugadorUseCase(jugador)
+                    .onFailure { ex ->
+                        _state.update { it.copy(isSaving = false, nombresError = ex.message) }
+                        return@launch
                     }
-                    return@launch
-                }
-            }
-            val jugador = Jugador(
-                jugadorId = state.value.jugadorId ?: 0,
-                nombres = nombres,
-                partidas = partidas.toInt()
-            )
 
-            val result = upsertJugadorUseCase(jugador)
-            result.onSuccess { newId ->
-                _state.update { it.copy(isSaving = false, saved = true, jugadorId = newId) }
-            }.onFailure {
-                _state.update { it.copy(isSaving = false) }
+                _state.update {
+                    it.copy(isSaving = false, message = "Jugador guardado correctamente")
+                }
+
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(isSaving = false, message = "Error al guardar: ${e.message}")
+                }
             }
         }
     }
 
-    private fun onDelete() {
+    private fun deleteJugador() {
         val id = state.value.jugadorId ?: return
+
         viewModelScope.launch {
             _state.update { it.copy(isDeleting = true) }
-            deleteJugadorUseCase(id)
-            _state.update { it.copy(isDeleting = false, deleted = true) }
+            try {
+                deleteJugadorUseCase(id)
+                _state.update { it.copy(isDeleting = false, message = "Jugador eliminado correctamente") }
+            } catch (e: Exception) {
+                _state.update { it.copy(isDeleting = false, message = "Error al eliminar: ${e.message}") }
+            }
         }
+    }
+
+    fun clearMessage() {
+        _state.update { it.copy(message = null) }
     }
 }
