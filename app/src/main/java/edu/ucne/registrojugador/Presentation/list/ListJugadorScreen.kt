@@ -20,13 +20,15 @@ import edu.ucne.registrojugador.presentation.list.ListJugadorViewModel
 fun ListJugadorScreen(
     viewModel: ListJugadorViewModel = hiltViewModel(),
     onNavigateToEdit: (Int) -> Unit,
-    onNavigateToCreate: () -> Unit
+    onNavigateToCreate: () -> Unit,
+    onNavigateToGame: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     ListJugadorBody(
         state = state,
         onNavigateToEdit = onNavigateToEdit,
         onNavigateToCreate = onNavigateToCreate,
+        onNavigateToGame = onNavigateToGame,
         onEvent = viewModel::onEvent
     )
 }
@@ -36,16 +38,33 @@ fun ListJugadorBody(
     state: ListJugadorUiState,
     onNavigateToEdit: (Int) -> Unit,
     onNavigateToCreate: () -> Unit,
+    onNavigateToGame: () -> Unit,
     onEvent: (ListJugadorUiEvent) -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxSize().padding(8.dp)) {
-
-        Button(
-            onClick = onNavigateToCreate,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("Crear Jugador")
+            Button(
+                onClick = onNavigateToCreate,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Crear Jugador")
+            }
+            Button(
+                onClick = onNavigateToGame,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Jugar")
+            }
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         Box(modifier = Modifier.fillMaxSize()) {
             if (state.isLoading) {
@@ -77,7 +96,9 @@ fun JugadorCard(
             .padding(vertical = 8.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {

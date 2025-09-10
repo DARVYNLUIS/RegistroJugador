@@ -14,6 +14,7 @@ import androidx.navigation.navArgument
 import dagger.hilt.android.AndroidEntryPoint
 import edu.ucne.registrojugador.presentation.jugador.edit.EditJugadorScreen
 import edu.ucne.registrojugador.presentation.jugador.list.ListJugadorScreen
+import edu.ucne.registrojugador.presentation.juego.TicTacToeScreen
 import edu.ucne.registrojugador.ui.theme.RegistroJugadorTheme
 
 @AndroidEntryPoint
@@ -25,9 +26,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             RegistroJugadorTheme {
                 Scaffold(
-                    topBar = {
-                        TopAppBar(title = { Text("Registro de Jugadores") })
-                    }
+                    topBar = { TopAppBar(title = { Text("Registro de Jugadores") }) }
                 ) { innerPadding ->
                     AppNavHost(Modifier.padding(innerPadding))
                 }
@@ -45,19 +44,22 @@ fun AppNavHost(modifier: Modifier = Modifier) {
         startDestination = "list",
         modifier = modifier
     ) {
+        // Pantalla de lista de jugadores
         composable("list") {
             ListJugadorScreen(
                 onNavigateToEdit = { jugadorId ->
-                    // Si es 0 o null, es para crear un jugador nuevo
                     navController.navigate("edit/${jugadorId ?: 0}")
                 },
                 onNavigateToCreate = {
-                    // Crear jugador
                     navController.navigate("edit/0")
+                },
+                onNavigateToGame = {
+                    navController.navigate("juego")
                 }
             )
         }
 
+        // Pantalla de edición de jugador
         composable(
             route = "edit/{jugadorId}",
             arguments = listOf(navArgument("jugadorId") {
@@ -70,6 +72,11 @@ fun AppNavHost(modifier: Modifier = Modifier) {
                 jugadorId = if (jugadorId == 0) null else jugadorId,
                 onBack = { navController.popBackStack() }
             )
+        }
+
+        // Pantalla del juego Tic Tac Toe
+        composable("juego") {
+            TicTacToeScreen(onBack = { navController.popBackStack() })
         }
     }
 }
