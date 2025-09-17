@@ -3,11 +3,11 @@ package edu.ucne.registrojugador.domain.jugador.usecase
 import kotlinx.coroutines.flow.first
 import edu.ucne.registrojugador.domain.jugador.model.Jugador
 import edu.ucne.registrojugador.domain.jugador.repository.JugadorRepository
+import javax.inject.Inject // <-- Add this import
 
-class UpsertJugadorUseCase(
+class UpsertJugadorUseCase @Inject constructor( // <-- Add @Inject here
     private val repository: JugadorRepository
 ) {
-
     suspend operator fun invoke(jugador: Jugador): Result<Int> {
         val existingJugadores = repository.observeJugadores().first()
 
