@@ -8,17 +8,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavType
-import androidx.navigation.compose.*
-import androidx.navigation.navArgument
+import androidx.core.view.WindowCompat
+import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
-import edu.ucne.registrojugador.presentation.jugador.edit.EditJugadorScreen
-import edu.ucne.registrojugador.presentation.jugador.list.ListJugadorScreen
-import edu.ucne.registrojugador.presentation.juego.TicTacToeScreen
+import edu.ucne.registrojugador.presentation.navigation.RegistroNavHost
 import edu.ucne.registrojugador.ui.theme.RegistroJugadorTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private val scope: CoroutineScope = MainScope()
+
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,55 +30,19 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     topBar = { TopAppBar(title = { Text("Registro de Jugadores") }) }
                 ) { innerPadding ->
-                    AppNavHost(Modifier.padding(innerPadding))
+                    AppContent(Modifier.padding(innerPadding))
                 }
             }
         }
     }
-}
 
-@Composable
-fun AppNavHost(modifier: Modifier = Modifier) {
-    val navController = rememberNavController()
-
-    NavHost(
-        navController = navController,
-        startDestination = "list",
-        modifier = modifier
-    ) {
-        // Pantalla de lista de jugadores
-        composable("list") {
-            ListJugadorScreen(
-                onNavigateToEdit = { jugadorId ->
-                    navController.navigate("edit/${jugadorId ?: 0}")
-                },
-                onNavigateToCreate = {
-                    navController.navigate("edit/0")
-                },
-                onNavigateToGame = {
-                    navController.navigate("juego")
-                }
-            )
-        }
-
-        // Pantalla de edición de jugador
-        composable(
-            route = "edit/{jugadorId}",
-            arguments = listOf(navArgument("jugadorId") {
-                type = NavType.IntType
-                defaultValue = 0
-            })
-        ) { backStackEntry ->
-            val jugadorId = backStackEntry.arguments?.getInt("jugadorId")
-            EditJugadorScreen(
-                jugadorId = if (jugadorId == 0) null else jugadorId,
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        // Pantalla del juego Tic Tac Toe
-        composable("juego") {
-            TicTacToeScreen(onBack = { navController.popBackStack() })
-        }
+    @Composable
+    fun AppContent(modifier: Modifier = Modifier) {
+        val navController = rememberNavController()
+        RegistroNavHost(
+            navController = navController,
+            scope = scope,
+            modifier = modifier // Pass the modifier to the NavHost
+        )
     }
 }

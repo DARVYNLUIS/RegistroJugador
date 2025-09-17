@@ -43,6 +43,12 @@ android {
 }
 
 dependencies {
+
+        implementation ("androidx.navigation:navigation-compose:2.7.3")
+        implementation ("androidx.compose.material:material:1.6.0")
+        implementation ("androidx.compose.ui:ui:1.6.0")
+        implementation ("androidx.hilt:hilt-navigation-compose:1.1.0")
+
     //imagenes
     implementation("io.coil-kt:coil-compose:2.5.0")
     //navigation

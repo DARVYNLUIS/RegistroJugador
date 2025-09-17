@@ -1,3 +1,5 @@
+// file: C:/APLICADA_2/app/src/main/java/edu/ucne/registrojugador/di/AppModule.kt
+
 package edu.ucne.registrojugador.di
 
 import android.content.Context
@@ -8,58 +10,38 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import edu.ucne.registrojugador.data.local.dao.JugadorDao
-import edu.ucne.registrojugador.data.local.database.JugadorDatabase
-import edu.ucne.registrojugador.data.repository.JugadorRepositoryImpl
-import edu.ucne.registrojugador.domain.jugador.repository.JugadorRepository
-import edu.ucne.registrojugador.domain.jugador.usecase.DeleteJugadorUseCase
-import edu.ucne.registrojugador.domain.jugador.usecase.GetJugadorUseCase
-import edu.ucne.registrojugador.domain.jugador.usecase.ObserveJugadorUseCase
-import edu.ucne.registrojugador.domain.jugador.usecase.UpsertJugadorUseCase
+import edu.ucne.registrojugador.data.local.dao.PartidaDao
+import edu.ucne.registrojugador.data.local.database.AppDatabase
+import edu.ucne.registrojugador.domain.jugador.usecase.*
+import edu.ucne.registrojugador.domain.jugador.usecase.partida.*
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
-@Module
+@Module(includes = [RepositoryModule::class]) // Include the new module here
 object AppModule {
 
+    // Base de datos
     @Provides
     @Singleton
-    fun provideJugadorDb(@ApplicationContext appContext: Context) =
+    fun provideAppDatabase(@ApplicationContext appContext: Context) =
         Room.databaseBuilder(
             appContext,
-            JugadorDatabase::class.java,
-            "Jugadores.db"
+            AppDatabase::class.java,
+            "RegistroJugador.db"
         ).fallbackToDestructiveMigration()
             .build()
 
+    // DAOs
     @Provides
-    fun provideJugadorDao(jugadorDatabase: JugadorDatabase ) = jugadorDatabase.JugadorDao()
+    @Singleton
+    fun provideJugadorDao(db: AppDatabase): JugadorDao = db.jugadorDao()
 
     @Provides
     @Singleton
-    fun provideGetJugadorUseCase(jugadorRepository: JugadorRepository) : GetJugadorUseCase{
-        return GetJugadorUseCase(jugadorRepository)
-    }
-    @Provides
-    @Singleton
-    fun provideObserveJugadorUseCase(jugadorRepository: JugadorRepository) : ObserveJugadorUseCase{
-        return ObserveJugadorUseCase(jugadorRepository)
-    }
-    @Provides
-    @Singleton
-    fun provideUpsertJugadorUseCase(jugadorRepository: JugadorRepository) : UpsertJugadorUseCase{
-        return UpsertJugadorUseCase(jugadorRepository)
-    }
-    @Provides
-    @Singleton
-    fun provideDeleteJugadorUseCase(jugadorRepository: JugadorRepository) : DeleteJugadorUseCase{
-        return DeleteJugadorUseCase(jugadorRepository)
-    }
+    fun providePartidaDao(db: AppDatabase): PartidaDao = db.partidaDao()
 
-    @Provides
-    @Singleton
-    fun provideJugadorRepository(jugadorDao: JugadorDao): JugadorRepository{
-        return JugadorRepositoryImpl(jugadorDao)
-    }
+    // UseCases Jugador - Hilt can create these automatically if they have @Inject constructors.
+    // So you don't need to manually provide them here.
 
+    // UseCases Partida - Same here, Hilt can create these.
 }
-
