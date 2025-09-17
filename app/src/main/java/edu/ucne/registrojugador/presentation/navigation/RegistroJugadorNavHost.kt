@@ -52,18 +52,15 @@ fun RegistroNavHost(
             )
         }
 
-        // Pantalla de lista de partidas
         composable(Screen.PartidaList.route) {
             ListPartidaScreen(
                 onNavigateToCreate = {
-                    // Si quieres que "crear partida" abra el juego:
                     navController.navigate(Screen.TicTacToe.route)
                 },
                 onBack = { navController.popBackStack() }
             )
         }
 
-        // Pantalla de edición/creación de jugador
         composable(Screen.EditJugador.route) {
             EditJugadorScreen(
                 onBack = { navController.popBackStack() }
