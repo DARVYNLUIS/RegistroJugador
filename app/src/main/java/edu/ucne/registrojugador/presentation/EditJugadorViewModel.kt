@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.registrojugador.domain.jugador.model.Jugador
 import edu.ucne.registrojugador.domain.jugador.usecase.DeleteJugadorUseCase
+import edu.ucne.registrojugador.domain.jugador.usecase.GetJugadorUseCase
 import edu.ucne.registrojugador.domain.jugador.usecase.UpsertJugadorUseCase
-import edu.ucne.registrojugador.presentation.ValidationResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,10 +14,16 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+data class ValidationResult(
+    val successful: Boolean,
+    val errorMessage: String? = null
+)
+
 @HiltViewModel
 class EditJugadorViewModel @Inject constructor(
     private val upsertJugadorUseCase: UpsertJugadorUseCase,
-    private val deleteJugadorUseCase: DeleteJugadorUseCase
+    private val deleteJugadorUseCase: DeleteJugadorUseCase,
+    private val getJugadorUseCase: GetJugadorUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(EditJugadorUiState())
@@ -46,14 +52,14 @@ class EditJugadorViewModel @Inject constructor(
                 _state.update { it.copy(isNew = true, jugadorId = null) }
             } else {
                 // Cargar jugador existente
-                val jugador = upsertJugadorUseCase.getJugadorById(jugadorId)
+                val jugador = getJugadorUseCase(jugadorId)
                 jugador?.let {
                     _state.update {
                         it.copy(
                             isNew = false,
                             jugadorId = jugador.jugadorId,
                             nombres = jugador.nombres,
-                            partidas = jugador.partidas
+                            partidas = jugador.partidas.toString()
                         )
                     }
                 }
@@ -65,12 +71,14 @@ class EditJugadorViewModel @Inject constructor(
         if (nombres.isBlank()) ValidationResult(false, "El nombre es obligatorio")
         else ValidationResult(true)
 
-    private fun validatePartidas(partidas: Int?): ValidationResult =
-        when {
-            partidas == null -> ValidationResult(false, "Las partidas son obligatorias")
-            partidas < 0 -> ValidationResult(false, "Las partidas son obligatorias")
+    private fun validatePartidas(partidas: String): ValidationResult {
+        val partidasNum = partidas.toIntOrNull()
+        return when {
+            partidas.isBlank() -> ValidationResult(false, "Las partidas son obligatorias")
+            partidasNum == null || partidasNum < 0 -> ValidationResult(false, "Debe ser un número entero mayor o igual a 0")
             else -> ValidationResult(true)
         }
+    }
 
     private fun saveJugador() {
         val currentState = state.value
@@ -90,11 +98,14 @@ class EditJugadorViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isSaving = true) }
             try {
+                // Correctly get the validated number after a successful check
+                val partidasInt = currentState.partidas.toInt()
+
                 // Crear jugador a guardar
                 val jugador = Jugador(
                     jugadorId = currentState.jugadorId ?: 0,
                     nombres = currentState.nombres,
-                    partidas = currentState.partidas!!
+                    partidas = partidasInt
                 )
 
                 // Verificar duplicado

@@ -1,4 +1,4 @@
-package edu.ucne.registrojugador.presentation.jugador.list
+package edu.ucne.registrojugador.presentation.list
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,14 +14,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.ucne.registrojugador.domain.jugador.model.Jugador
 import edu.ucne.registrojugador.presentation.list.ListJugadorUiEvent
 import edu.ucne.registrojugador.presentation.list.ListJugadorUiState
-import edu.ucne.registrojugador.presentation.list.ListJugadorViewModel
 
 @Composable
 fun ListJugadorScreen(
     viewModel: ListJugadorViewModel = hiltViewModel(),
     onNavigateToEdit: (Int) -> Unit,
     onNavigateToCreate: () -> Unit,
-    onNavigateToGame: () -> Unit
+    onNavigateToGame: () -> Unit,
+    onNavigateToGamesList: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     ListJugadorBody(
@@ -29,6 +29,7 @@ fun ListJugadorScreen(
         onNavigateToEdit = onNavigateToEdit,
         onNavigateToCreate = onNavigateToCreate,
         onNavigateToGame = onNavigateToGame,
+        onNavigateToGamesList = onNavigateToGamesList,
         onEvent = viewModel::onEvent
     )
 }
@@ -39,39 +40,48 @@ fun ListJugadorBody(
     onNavigateToEdit: (Int) -> Unit,
     onNavigateToCreate: () -> Unit,
     onNavigateToGame: () -> Unit,
+    onNavigateToGamesList: () -> Unit,
     onEvent: (ListJugadorUiEvent) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
         ) {
-            Button(
-                onClick = onNavigateToCreate,
-                modifier = Modifier.weight(1f)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text("Crear Jugador")
+                Button(
+                    onClick = onNavigateToCreate,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Crear Jugador")
+                }
+
+                Button(
+                    onClick = onNavigateToGame,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Jugar")
+                }
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
             Button(
-                onClick = onNavigateToGame,
-                modifier = Modifier.weight(1f)
+                onClick = onNavigateToGamesList,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Jugar")
-            }
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Box(modifier = Modifier.fillMaxSize()) {
-            if (state.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                Text("Ver Partidas")
             }
 
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 items(state.jugadores) { jugador ->
                     JugadorCard(
                         jugador = jugador,
@@ -80,6 +90,10 @@ fun ListJugadorBody(
                     )
                 }
             }
+        }
+
+        if (state.isLoading) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         }
     }
 }
@@ -93,7 +107,7 @@ fun JugadorCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
+            .padding(vertical = 4.dp)
     ) {
         Row(
             modifier = Modifier
