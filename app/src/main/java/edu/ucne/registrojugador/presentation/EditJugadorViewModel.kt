@@ -7,6 +7,7 @@ import edu.ucne.registrojugador.domain.jugador.model.Jugador
 import edu.ucne.registrojugador.domain.jugador.usecase.DeleteJugadorUseCase
 import edu.ucne.registrojugador.domain.jugador.usecase.GetJugadorUseCase
 import edu.ucne.registrojugador.domain.jugador.usecase.UpsertJugadorUseCase
+import edu.ucne.registrojugador.presentation.EditJugadorUiEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

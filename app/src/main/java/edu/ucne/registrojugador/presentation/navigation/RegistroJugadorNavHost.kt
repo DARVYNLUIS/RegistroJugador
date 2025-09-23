@@ -8,8 +8,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import edu.ucne.registrojugador.presentation.jugador.edit.EditJugadorScreen
-import edu.ucne.registrojugador.presentation.juego.TicTacToeScreen
+import edu.ucne.registrojugador.presentation.EditJugadorScreen
+import edu.ucne.registrojugador.presentation.tictactoe.TicTacToeScreen
 import edu.ucne.registrojugador.presentation.list.ListJugadorScreen
 import edu.ucne.registrojugador.presentation.partida.ListPartidaScreen
 import edu.ucne.registrojugador.presentation.partida.PartidaViewModel

@@ -1,4 +1,4 @@
-package edu.ucne.registrojugador.presentation.juego
+package edu.ucne.registrojugador.presentation.tictactoe
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,8 +16,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.ucne.registrojugador.domain.jugador.model.Jugador
 import edu.ucne.registrojugador.domain.jugador.model.Partida
-import edu.ucne.registrojugador.presentation.tictactoe.GameUiState
-import edu.ucne.registrojugador.presentation.tictactoe.GameViewModel
 import edu.ucne.registrojugador.ui.theme.RegistroJugadorTheme
 import java.time.LocalDate
 

@@ -1,4 +1,4 @@
-package edu.ucne.registrojugador.presentation.jugador.edit
+package edu.ucne.registrojugador.presentation
 
 sealed class EditJugadorUiEvent {
     data class NombresChanged(val nombres: String) : EditJugadorUiEvent()

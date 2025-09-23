@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -20,7 +21,7 @@ import edu.ucne.registrojugador.domain.jugador.model.Partida
 fun ListPartidaScreen(
     viewModel: PartidaViewModel = hiltViewModel(),
     onNavigateToCreate: () -> Unit,
-    onBack: () -> Unit // Agregado: el parámetro 'onBack'
+    onBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -31,51 +32,62 @@ fun ListPartidaScreen(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListPartidaBody(
     state: PartidaUiState,
     onNavigateToCreate: () -> Unit,
     onDeletePartida: (Partida) -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(
+    Scaffold(
+        floatingActionButton = {
+            SmallFloatingActionButton(
+                onClick = onNavigateToCreate
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Agregar"
+                )
+            }
+        }
+    ) { paddingValues ->
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(paddingValues)
+                .padding(16.dp)
         ) {
-            // Button to create a new match
-            Button(
-                onClick = onNavigateToCreate,
-                modifier = Modifier.fillMaxWidth()
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Crear Partida")
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // List of matches
-            if (state.partidas.isEmpty()) {
-                Text("No hay partidas registradas.", style = MaterialTheme.typography.titleMedium)
-            } else {
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(state.partidas) { partida ->
-                        PartidaCard(
-                            partida = partida,
-                            onDelete = { onDeletePartida(partida) }
-                        )
+                if (state.partidas.isEmpty()) {
+                    Text(
+                        "No hay partidas registradas.",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(
+                            state.partidas.sortedByDescending { it.partidaId } // 👈 ordenar mayor a menor
+                        ) { partida ->
+                            PartidaCard(
+                                partida = partida,
+                                onDelete = { onDeletePartida(partida) }
+                            )
+                        }
                     }
                 }
             }
-        }
 
-        // Display messages using Snackbar
-        state.message?.let {
-            Snackbar {
-                Text(it)
+            // Mensaje snackbar
+            state.message?.let {
+                Snackbar(modifier = Modifier.align(Alignment.BottomCenter)) {
+                    Text(it)
+                }
             }
         }
     }
@@ -102,7 +114,8 @@ fun PartidaCard(
                 Text("Fecha: ${partida.fecha}")
                 Text("Jugador 1 ID: ${partida.jugador1Id}")
                 Text("Jugador 2 ID: ${partida.jugador2Id}")
-                val ganadorText = if (partida.ganadorId != null) "Ganador: ${partida.ganadorId}" else "Empate"
+                val ganadorText =
+                    if (partida.ganadorId != null) "Ganador: ${partida.ganadorId}" else "Empate"
                 Text(ganadorText)
                 val estadoText = if (partida.esFinalizada) "Finalizada" else "En curso"
                 Text("Estado: $estadoText")
