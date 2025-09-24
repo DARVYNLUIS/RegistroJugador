@@ -37,7 +37,10 @@ fun ListPartidaScreen(
 fun ListPartidaBody(
     state: PartidaUiState,
     onNavigateToCreate: () -> Unit,
-    onDeletePartida: (Partida) -> Unit
+    onDeletePartida: (Partida) -> Unit,
+    navToJugadores: () -> Unit = {},
+    navToLogros: () -> Unit = {},
+    navToPartidas: () -> Unit = {}
 ) {
     Scaffold(
         floatingActionButton = {
@@ -48,6 +51,24 @@ fun ListPartidaBody(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Agregar"
                 )
+            }
+        },
+        bottomBar = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Button(onClick = navToJugadores) {
+                    Text("Jugadores")
+                }
+                Button(onClick = navToLogros) {
+                    Text("Logros")
+                }
+                Button(onClick = navToPartidas) {
+                    Text("Partidas")
+                }
             }
         }
     ) { paddingValues ->
@@ -92,6 +113,7 @@ fun ListPartidaBody(
         }
     }
 }
+
 
 @Composable
 fun PartidaCard(

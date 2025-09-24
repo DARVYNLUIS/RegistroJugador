@@ -1,5 +1,3 @@
-// file: C:/APLICADA_2/app/src/main/java/edu/ucne/registrojugador/presentation/navigation/RegistroNavHost.kt
-
 package edu.ucne.registrojugador.presentation.navigation
 
 import androidx.compose.runtime.Composable
@@ -13,6 +11,8 @@ import edu.ucne.registrojugador.presentation.tictactoe.TicTacToeScreen
 import edu.ucne.registrojugador.presentation.list.ListJugadorScreen
 import edu.ucne.registrojugador.presentation.partida.ListPartidaScreen
 import edu.ucne.registrojugador.presentation.partida.PartidaViewModel
+import edu.ucne.registrojugador.presentation.logro.list.ListLogroScreen
+import edu.ucne.registrojugador.presentation.logro.edit.EditLogroScreen
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
@@ -28,8 +28,6 @@ fun RegistroNavHost(
         startDestination = Screen.JugadorList.route,
         modifier = modifier
     ) {
-
-        // Pantalla de lista de jugadores
         composable(Screen.JugadorList.route) {
             ListJugadorScreen(
                 onNavigateToGame = { navController.navigate(Screen.TicTacToe.route) },
@@ -37,11 +35,12 @@ fun RegistroNavHost(
                 onNavigateToCreate = { navController.navigate(Screen.EditJugador.createRoute(null)) },
                 onNavigateToEdit = { jugadorId ->
                     navController.navigate(Screen.EditJugador.createRoute(jugadorId))
-                }
+                },
+                onNavigateToCreateLogro = { navController.navigate(Screen.EditLogro.createRoute(null)) },
+                onNavigateToLogroList = { navController.navigate(Screen.LogroList.route) } // Nuevo parámetro de navegación
             )
         }
 
-        // Pantalla del juego
         composable(Screen.TicTacToe.route) {
             TicTacToeScreen(
                 onBack = { navController.popBackStack() },
@@ -64,6 +63,21 @@ fun RegistroNavHost(
         composable(Screen.EditJugador.route) {
             EditJugadorScreen(
                 onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.LogroList.route) {
+            ListLogroScreen(
+                onNavigateToEdit = { logroId ->
+                    navController.navigate(Screen.EditLogro.createRoute(logroId))
+                },
+                onNavigateToCreate = { navController.navigate(Screen.EditLogro.createRoute(null)) }
+            )
+        }
+
+        composable(Screen.EditLogro.route) {
+            EditLogroScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }
