@@ -1,0 +1,18 @@
+package edu.ucne.registrojugador.data.local.dto
+
+
+
+data class PartidaDto(
+    val partidaId: Int = 0,
+    val jugador1Id: Int = 0,
+    val jugador2Id: Int = 0
+)
+
+
+data class Movimiento(
+    val partidaId: Int,
+    val jugador: String,
+    val posicionFila: Int,
+    val posicionColumna: Int
+)
+

@@ -8,16 +8,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavType
-import androidx.navigation.compose.*
-import androidx.navigation.navArgument
+import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
-import edu.ucne.registrojugador.presentation.jugador.edit.EditJugadorScreen
-import edu.ucne.registrojugador.presentation.jugador.list.ListJugadorScreen
+import edu.ucne.registrojugador.presentation.list.ListJugadorScreen
+import edu.ucne.registrojugador.presentation.navigation.RegistroNavHost
+import edu.ucne.registrojugador.presentation.navigation.Screen
 import edu.ucne.registrojugador.ui.theme.RegistroJugadorTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private val scope: CoroutineScope = MainScope()  // <-- Agregado
+
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,51 +29,21 @@ class MainActivity : ComponentActivity() {
         setContent {
             RegistroJugadorTheme {
                 Scaffold(
-                    topBar = {
-                        TopAppBar(title = { Text("Registro de Jugadores") })
-                    }
+                    topBar = { TopAppBar(title = { Text("Registro de Jugadores") }) }
                 ) { innerPadding ->
-                    AppNavHost(Modifier.padding(innerPadding))
+                    AppContent(Modifier.padding(innerPadding))
                 }
             }
         }
     }
-}
 
-@Composable
-fun AppNavHost(modifier: Modifier = Modifier) {
-    val navController = rememberNavController()
-
-    NavHost(
-        navController = navController,
-        startDestination = "list",
-        modifier = modifier
-    ) {
-        composable("list") {
-            ListJugadorScreen(
-                onNavigateToEdit = { jugadorId ->
-                    // Si es 0 o null, es para crear un jugador nuevo
-                    navController.navigate("edit/${jugadorId ?: 0}")
-                },
-                onNavigateToCreate = {
-                    // Crear jugador
-                    navController.navigate("edit/0")
-                }
-            )
-        }
-
-        composable(
-            route = "edit/{jugadorId}",
-            arguments = listOf(navArgument("jugadorId") {
-                type = NavType.IntType
-                defaultValue = 0
-            })
-        ) { backStackEntry ->
-            val jugadorId = backStackEntry.arguments?.getInt("jugadorId")
-            EditJugadorScreen(
-                jugadorId = if (jugadorId == 0) null else jugadorId,
-                onBack = { navController.popBackStack() }
-            )
-        }
+    @Composable
+    fun AppContent(modifier: Modifier = Modifier) {
+        val navController = rememberNavController()
+        RegistroNavHost(
+            navController = navController,
+            scope = scope,          // <-- Pasar scope
+            modifier = modifier
+        )
     }
 }
