@@ -47,9 +47,8 @@ fun EditJugadorScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Campo Partidas (Int)
             OutlinedTextField(
-                value = state.partidas, // Use the String value from the state
+                value = state.partidas,
                 onValueChange = { text ->
                     viewModel.onEvent(EditJugadorUiEvent.PartidasChanged(text)) // Pass the String directly
                 },
@@ -62,7 +61,6 @@ fun EditJugadorScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botones Guardar y Eliminar
             Row(modifier = Modifier.fillMaxWidth()) {
                 Button(
                     onClick = { viewModel.onEvent(EditJugadorUiEvent.Save) },
@@ -83,7 +81,6 @@ fun EditJugadorScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botón Volver
             OutlinedButton(
                 onClick = onBack,
                 modifier = Modifier.fillMaxWidth()
@@ -91,7 +88,6 @@ fun EditJugadorScreen(
         }
     }
 
-    // Snackbar para mensajes de estado
     LaunchedEffect(state.message) {
         state.message?.let {
             scope.launch { snackbarHostState.showSnackbar(it) }

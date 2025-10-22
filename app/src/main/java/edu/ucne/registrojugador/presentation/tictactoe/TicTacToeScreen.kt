@@ -2,176 +2,110 @@ package edu.ucne.registrojugador.presentation.tictactoe
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.ucne.registrojugador.domain.jugador.model.Jugador
 import edu.ucne.registrojugador.domain.jugador.model.Partida
-import edu.ucne.registrojugador.ui.theme.RegistroJugadorTheme
+import edu.ucne.registrojugador.presentation.partida.MovimientosViewModel
 import java.time.LocalDate
 
 @Composable
 fun TicTacToeScreen(
-    viewModel: GameViewModel = hiltViewModel(),
+    gameViewModel: GameViewModel = hiltViewModel(),
+    movimientosViewModel: MovimientosViewModel = hiltViewModel(),
     onBack: () -> Unit,
     onGameEnd: (Partida) -> Unit
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
+    val state by gameViewModel.state.collectAsState()
+    val movimientosState by movimientosViewModel.state.collectAsState()
+    var partidaIdInput by remember { mutableStateOf("") }
 
-    LaunchedEffect(state.esFinalizada) {
-        if (state.esFinalizada) {
-            val partida = Partida(
-                fecha = LocalDate.now().toString(),
-                jugador1Id = state.player1Id!!,
-                jugador2Id = state.player2Id!!,
-                ganadorId = state.winnerId,
-                esFinalizada = true
-            )
-            onGameEnd(partida)
-        }
-    }
-
-    TicTacToeBody(
-        state = state,
-        jugadores = state.jugadores,
-        onSelectPlayer1 = { viewModel.selectPlayer1(it) },
-        onSelectPlayer2 = { viewModel.selectPlayer2(it) },
-        startGame = viewModel::startGame,
-        onCellClick = viewModel::onCellClick,
-        restartGame = viewModel::restartGame,
-        onBack = onBack
-    )
-}
-
-@Composable
-fun TicTacToeBody(
-    state: GameUiState,
-    jugadores: List<Jugador>,
-    onSelectPlayer1: (Jugador) -> Unit,
-    onSelectPlayer2: (Jugador) -> Unit,
-    startGame: () -> Unit,
-    onCellClick: (Int) -> Unit,
-    restartGame: () -> Unit,
-    onBack: () -> Unit
-) {
-    val jugadoresMap = remember(jugadores) { jugadores.associateBy { it.jugadorId } }
-
-    Scaffold { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            if (!state.gameStarted) {
-                PlayerSelectionScreen(
-                    jugadores = jugadores,
-                    player1 = state.player1Id?.let { jugadoresMap[it] },
-                    player2 = state.player2Id?.let { jugadoresMap[it] },
-                    onPlayer1Selected = onSelectPlayer1,
-                    onPlayer2Selected = onSelectPlayer2,
-                    onStartGame = startGame
-                )
-            } else {
-                GameBoard(
-                    uiState = state,
-                    jugadores = jugadores,
-                    onCellClick = onCellClick,
-                    onRestartGame = restartGame
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedButton(onClick = onBack) {
-                Text("Volver")
-            }
-        }
-    }
-}
-
-// --------------------------- SUBCOMPOSABLES ---------------------------
-
-@Composable
-fun PlayerSelectionScreen(
-    jugadores: List<Jugador>,
-    player1: Jugador?,
-    player2: Jugador?,
-    onPlayer1Selected: (Jugador) -> Unit,
-    onPlayer2Selected: (Jugador) -> Unit,
-    onStartGame: () -> Unit
-) {
-    Text("Selecciona jugadores", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-    Spacer(modifier = Modifier.height(16.dp))
-
-    DropdownJugador(
-        label = "Jugador 1",
-        jugadores = jugadores,
-        selected = player1,
-        onSelected = onPlayer1Selected
-    )
-
-    Spacer(modifier = Modifier.height(12.dp))
-
-    DropdownJugador(
-        label = "Jugador 2",
-        jugadores = jugadores,
-        selected = player2,
-        onSelected = onPlayer2Selected
-    )
-
-    Spacer(modifier = Modifier.height(20.dp))
-
-    Button(
-        onClick = onStartGame,
-        enabled = player1 != null && player2 != null && player1.jugadorId != player2.jugadorId
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Iniciar partida")
-    }
-}
-
-@Composable
-fun DropdownJugador(
-    label: String,
-    jugadores: List<Jugador>,
-    selected: Jugador?,
-    onSelected: (Jugador) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(label, fontWeight = FontWeight.SemiBold)
-        Spacer(modifier = Modifier.height(6.dp))
-        OutlinedButton(onClick = { expanded = true }) {
-            Text(selected?.nombres ?: "Seleccionar jugador")
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            OutlinedTextField(
+                value = partidaIdInput,
+                onValueChange = { partidaIdInput = it },
+                label = { Text("ID de Partida") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Button(onClick = {
+            }) {
+                Text("Refrescar")
+            }
         }
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        val jugadoresMap = state.jugadores.associateBy { it.jugadorId }
+        val currentPlayerName = state.currentPlayerId?.let { jugadoresMap[it]?.nombres } ?: "—"
+        val statusText = when {
+            state.winnerId != null -> " ¡Ganador: ${jugadoresMap[state.winnerId]?.nombres}!"
+            state.isDraw -> " ¡Empate!"
+            else -> "Turno de: $currentPlayerName"
+        }
+
+        Text(
+            text = statusText,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        GameBoard(
+            board = state.board,
+            jugadoresMap = jugadoresMap,
+            player1Id = state.player1Id,
+            player2Id = state.player2Id
+        ) { index ->
+            gameViewModel.onCellClick(index, movimientosViewModel)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 🔹 Botones
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            if (jugadores.isEmpty()) {
-                DropdownMenuItem(text = { Text("No hay jugadores") }, onClick = { expanded = false })
-            } else {
-                jugadores.forEach { jugador ->
-                    DropdownMenuItem(
-                        text = { Text(jugador.nombres) },
-                        onClick = {
-                            onSelected(jugador)
-                            expanded = false
-                        }
-                    )
-                }
+            Button(onClick = { gameViewModel.restartGame() }) { Text("Reiniciar Juego") }
+            Button(onClick = onBack) { Text("Volver") }
+        }
+
+        movimientosState.message?.let { message ->
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(message, color = Color.Red, fontWeight = FontWeight.Bold)
+        }
+
+        LaunchedEffect(state.esFinalizada) {
+            if (state.esFinalizada && state.player1Id != null && state.player2Id != null) {
+                val partida = Partida(
+                    fecha = LocalDate.now().toString(),
+                    jugador1Id = state.player1Id!!,
+                    jugador2Id = state.player2Id!!,
+                    ganadorId = state.winnerId,
+                    esFinalizada = true
+                )
+                onGameEnd(partida)
             }
         }
     }
@@ -179,56 +113,22 @@ fun DropdownJugador(
 
 @Composable
 fun GameBoard(
-    uiState: GameUiState,
-    jugadores: List<Jugador>,
-    onCellClick: (Int) -> Unit,
-    onRestartGame: () -> Unit
-) {
-    val jugadoresMap = remember(jugadores) { jugadores.associateBy { it.jugadorId } }
-    val currentPlayerName = uiState.currentPlayerId?.let { jugadoresMap[it]?.nombres } ?: "—"
-    val winnerName = uiState.winnerId?.let { jugadoresMap[it]?.nombres }
-
-    val gameStatus = when {
-        winnerName != null -> "🏆 ¡Ganador: $winnerName!"
-        uiState.isDraw -> "🤝 ¡Es un empate!"
-        else -> "Turno de: $currentPlayerName"
-    }
-
-    Text(text = gameStatus, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-    Spacer(modifier = Modifier.height(20.dp))
-    GameBoardBody(
-        board = uiState.board,
-        jugadoresMap = jugadoresMap,
-        player1Id = uiState.player1Id,
-        player2Id = uiState.player2Id,
-        onCellClick = onCellClick
-    )
-    Spacer(modifier = Modifier.height(20.dp))
-    Button(onClick = onRestartGame) {
-        Text("Reiniciar Juego", fontSize = 18.sp)
-    }
-}
-
-@Composable
-fun GameBoardBody(
     board: List<Int?>,
     jugadoresMap: Map<Int, Jugador?>,
     player1Id: Int?,
     player2Id: Int?,
     onCellClick: (Int) -> Unit
 ) {
-    Column {
-        (0..2).forEach { row ->
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        for (row in 0..2) {
             Row {
-                (0..2).forEach { col ->
+                for (col in 0..2) {
                     val index = row * 3 + col
                     val jugador = board[index]?.let { jugadoresMap[it] }
                     val isP1 = board[index] != null && board[index] == player1Id
-                    BoardCell(
-                        jugador = jugador,
-                        isPlayer1 = isP1,
-                        onCellClick = { onCellClick(index) }
-                    )
+                    BoardCell(jugador, isP1) {
+                        if (board[index] == null) onCellClick(index)
+                    }
                 }
             }
         }
@@ -236,10 +136,10 @@ fun GameBoardBody(
 }
 
 @Composable
-private fun BoardCell(
+fun BoardCell(
     jugador: Jugador?,
     isPlayer1: Boolean,
-    onCellClick: () -> Unit
+    onClick: () -> Unit
 ) {
     val display = when {
         jugador == null -> ""
@@ -247,7 +147,7 @@ private fun BoardCell(
         else -> "O"
     }
 
-    val textColor = when {
+    val color = when {
         jugador == null -> Color.Black
         isPlayer1 -> Color(0xFF0D47A1)
         else -> Color(0xFFD32F2F)
@@ -258,35 +158,11 @@ private fun BoardCell(
             .size(100.dp)
             .padding(4.dp)
             .background(Color.LightGray)
-            .clickable { onCellClick() },
+            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
+                onClick()
+            },
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = display,
-            fontSize = 48.sp,
-            fontWeight = FontWeight.Bold,
-            color = textColor
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun BoardPreview() {
-    val demoPlayers = listOf(
-        Jugador(jugadorId = 1, nombres = "Ana Pérez", partidas = 0),
-        Jugador(jugadorId = 2, nombres = "Luis Gomez", partidas = 0)
-    )
-    RegistroJugadorTheme {
-        TicTacToeBody(
-            state = GameUiState(jugadores = demoPlayers),
-            jugadores = demoPlayers,
-            onSelectPlayer1 = {},
-            onSelectPlayer2 = {},
-            startGame = {},
-            onCellClick = {},
-            restartGame = {},
-            onBack = {}
-        )
+        Text(display, fontSize = 48.sp, fontWeight = FontWeight.Bold, color = color)
     }
 }
