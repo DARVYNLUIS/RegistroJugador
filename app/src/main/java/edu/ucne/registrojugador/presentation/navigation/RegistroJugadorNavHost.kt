@@ -1,18 +1,18 @@
-// file: C:/APLICADA_2/app/src/main/java/edu/ucne/registrojugador/presentation/navigation/RegistroNavHost.kt
-
 package edu.ucne.registrojugador.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import edu.ucne.registrojugador.presentation.EditJugadorScreen
-import edu.ucne.registrojugador.presentation.tictactoe.TicTacToeScreen
+import androidx.navigation.navArgument
+import androidx.navigation.NavType
 import edu.ucne.registrojugador.presentation.list.ListJugadorScreen
 import edu.ucne.registrojugador.presentation.partida.ListPartidaScreen
 import edu.ucne.registrojugador.presentation.partida.PartidaViewModel
+import edu.ucne.registrojugador.presentation.tictactoe.TicTacToeScreen
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
@@ -29,20 +29,35 @@ fun RegistroNavHost(
         modifier = modifier
     ) {
 
-        // Pantalla de lista de jugadores
         composable(Screen.JugadorList.route) {
             ListJugadorScreen(
-                onNavigateToGame = { navController.navigate(Screen.TicTacToe.route) },
-                onNavigateToGamesList = { navController.navigate(Screen.PartidaList.route) },
-                onNavigateToCreate = { navController.navigate(Screen.EditJugador.createRoute(null)) },
                 onNavigateToEdit = { jugadorId ->
                     navController.navigate(Screen.EditJugador.createRoute(jugadorId))
+                },
+                onNavigateToCreate = {
+                    navController.navigate(Screen.EditJugador.createRoute(null))
+                },
+                onNavigateToGame = {
+                    navController.navigate(Screen.TicTacToe.createRoute(null))
+                },
+                onNavigateToGamesList = {
+                    navController.navigate(Screen.PartidaList.route)
                 }
             )
         }
 
-        // Pantalla del juego
-        composable(Screen.TicTacToe.route) {
+        composable(
+            route = Screen.TicTacToe.route,
+            arguments = listOf(
+                navArgument("partidaId") {
+                    type = NavType.IntType
+                    defaultValue = -1
+                }
+            )
+        ) { backStackEntry ->
+            val partidaIdArg = backStackEntry.arguments?.getInt("partidaId") ?: -1
+            val partidaId = if (partidaIdArg == -1) null else partidaIdArg
+
             TicTacToeScreen(
                 onBack = { navController.popBackStack() },
                 onGameEnd = { partida ->
@@ -54,17 +69,30 @@ fun RegistroNavHost(
 
         composable(Screen.PartidaList.route) {
             ListPartidaScreen(
-                onNavigateToCreate = {
-                    navController.navigate(Screen.TicTacToe.route)
+                navToDetalle = { partidaId ->
+                    navController.navigate(Screen.TicTacToe.createRoute(partidaId))
                 },
+                viewModel = partidaViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
 
-        composable(Screen.EditJugador.route) {
-            EditJugadorScreen(
-                onBack = { navController.popBackStack() }
-            )
+        composable(
+            route = Screen.EditJugador.route,
+            arguments = listOf(navArgument("jugadorId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val jugadorIdArg = backStackEntry.arguments?.getInt("jugadorId") ?: -1
+            val jugadorId = if (jugadorIdArg == -1) null else jugadorIdArg
+
+        }
+
+        composable(
+            route = Screen.EditPartida.route,
+            arguments = listOf(navArgument("partidaId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val partidaIdArg = backStackEntry.arguments?.getInt("partidaId") ?: -1
+            val partidaId = if (partidaIdArg == -1) null else partidaIdArg
+
         }
     }
 }

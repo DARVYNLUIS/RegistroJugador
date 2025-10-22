@@ -1,17 +1,36 @@
 package edu.ucne.registrojugador.presentation.navigation
 
-sealed class Screen(val route: String) {
-    // Rutas sin parámetros (Objetos)
-    object JugadorList : Screen("jugador_list")
-    object PartidaList : Screen("partida_list")
-    object TicTacToe : Screen("tic_tac_toe")
+object Screen {
 
-    // Rutas con parámetros (Objetos y funciones de ayuda)
-    object EditJugador : Screen("edit_jugador/{jugadorId}") {
-        fun createRoute(jugadorId: Int?) = "edit_jugador/${jugadorId ?: "null"}"
+    object JugadorList {
+        const val route = "jugador_list"
     }
 
-    object EditPartida : Screen("edit_partida/{partidaId}") {
-        fun createRoute(partidaId: Int?) = "edit_partida/${partidaId ?: "null"}"
+    object TicTacToe {
+        const val route = "tic_tac_toe/{partidaId}"
+
+        fun createRoute(partidaId: Int?): String {
+            return "tic_tac_toe/${partidaId ?: -1}"
+        }
+    }
+
+    object PartidaList {
+        const val route = "partida_list"
+    }
+
+    object EditJugador {
+        const val route = "edit_jugador/{jugadorId}"
+
+        fun createRoute(jugadorId: Int?): String {
+            return "edit_jugador/${jugadorId ?: -1}"
+        }
+    }
+
+    object EditPartida {
+        const val route = "edit_partida/{partidaId}"
+
+        fun createRoute(partidaId: Int?): String {
+            return "edit_partida/${partidaId ?: -1}"
+        }
     }
 }
