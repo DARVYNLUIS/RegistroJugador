@@ -4,10 +4,10 @@ import edu.ucne.registrojugador.domain.jugador.model.Partida
 import edu.ucne.registrojugador.domain.jugador.repository.PartidaRepository
 import javax.inject.Inject
 
-class GetPartidasUseCase @Inject constructor(
+class CrearPartidaUseCase @Inject constructor(
     private val repository: PartidaRepository
 ) {
-    suspend operator fun invoke(): List<Partida> {
-        return repository.getPartidasFromApi()
+    suspend operator fun invoke(jugador1Id: Int, jugador2Id: Int): Partida {
+        return repository.crearPartidaApi(jugador1Id, jugador2Id)
     }
 }

@@ -7,7 +7,7 @@ import javax.inject.Inject
 class ExistePartidaUseCase @Inject constructor(
     private val repository: PartidaRepository
 ) {
-    suspend operator fun invoke(jugador1Id: Int, jugador2Id: Int, fecha: String): Boolean {
+    suspend operator fun invoke(jugador1Id: Int, jugador2Id: Int, fecha: String?): Boolean {
         val partidas = repository.getPartidas().first() // Get the list directly
 
         return partidas.any {
