@@ -2,7 +2,7 @@ package edu.ucne.registrojugador.domain.jugador.model
 
 data class Partida(
     val partidaId: Int = 0,
-    val fecha: String,
+    val fecha: String? = null,
     val jugador1Id: Int,
     val jugador2Id: Int,
     val ganadorId: Int? = null,
