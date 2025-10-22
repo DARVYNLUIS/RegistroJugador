@@ -8,10 +8,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.core.view.WindowCompat
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import edu.ucne.registrojugador.presentation.list.ListJugadorScreen
 import edu.ucne.registrojugador.presentation.navigation.RegistroNavHost
+import edu.ucne.registrojugador.presentation.navigation.Screen
 import edu.ucne.registrojugador.ui.theme.RegistroJugadorTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
@@ -19,7 +20,7 @@ import kotlinx.coroutines.MainScope
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val scope: CoroutineScope = MainScope()
+    private val scope: CoroutineScope = MainScope()  // <-- Agregado
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,8 +42,8 @@ class MainActivity : ComponentActivity() {
         val navController = rememberNavController()
         RegistroNavHost(
             navController = navController,
-            scope = scope,
-            modifier = modifier // Pass the modifier to the NavHost
+            scope = scope,          // <-- Pasar scope
+            modifier = modifier
         )
     }
 }
