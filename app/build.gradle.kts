@@ -82,6 +82,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.firebase.appdistribution.gradle)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.tracing.perfetto.handshake)
+    implementation(libs.androidx.media3.exoplayer)
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 

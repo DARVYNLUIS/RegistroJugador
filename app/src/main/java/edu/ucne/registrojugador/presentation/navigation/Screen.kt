@@ -2,6 +2,9 @@ package edu.ucne.registrojugador.presentation.navigation
 
 object Screen {
 
+    object PlayerList {
+        const val route = "player_list"
+    }
     object JugadorList {
         const val route = "jugador_list"
     }
@@ -18,7 +21,7 @@ object Screen {
         const val route = "partida_list"
     }
 
-    object EditJugador {
+    object EditPlayer {
         const val route = "edit_jugador/{jugadorId}"
 
         fun createRoute(jugadorId: Int?): String {

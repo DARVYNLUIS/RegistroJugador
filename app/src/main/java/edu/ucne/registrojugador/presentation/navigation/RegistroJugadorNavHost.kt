@@ -9,7 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.NavType
-import edu.ucne.registrojugador.presentation.list.ListJugadorScreen
+import edu.ucne.registrojugador.presentation.list.ListPlayerScreen
 import edu.ucne.registrojugador.presentation.partida.ListPartidaScreen
 import edu.ucne.registrojugador.presentation.partida.PartidaViewModel
 import edu.ucne.registrojugador.presentation.tictactoe.TicTacToeScreen
@@ -25,27 +25,23 @@ fun RegistroNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = Screen.JugadorList.route,
+        startDestination = Screen.PlayerList.route, // Abrir con la lista de players
         modifier = modifier
     ) {
 
-        composable(Screen.JugadorList.route) {
-            ListJugadorScreen(
-                onNavigateToEdit = { jugadorId ->
-                    navController.navigate(Screen.EditJugador.createRoute(jugadorId))
+        // Lista de Players (desde API)
+        composable(Screen.PlayerList.route) {
+            ListPlayerScreen(
+                onNavigateToEdit = { playerId ->
+                    navController.navigate(Screen.EditPlayer.createRoute(playerId))
                 },
                 onNavigateToCreate = {
-                    navController.navigate(Screen.EditJugador.createRoute(null))
-                },
-                onNavigateToGame = {
-                    navController.navigate(Screen.TicTacToe.createRoute(null))
-                },
-                onNavigateToGamesList = {
-                    navController.navigate(Screen.PartidaList.route)
+                    navController.navigate(Screen.EditPlayer.createRoute(null))
                 }
             )
         }
 
+        // TicTacToe
         composable(
             route = Screen.TicTacToe.route,
             arguments = listOf(
@@ -67,6 +63,7 @@ fun RegistroNavHost(
             )
         }
 
+        // Lista de Partidas
         composable(Screen.PartidaList.route) {
             ListPartidaScreen(
                 navToDetalle = { partidaId ->
@@ -77,15 +74,18 @@ fun RegistroNavHost(
             )
         }
 
+        // Edit Player
         composable(
-            route = Screen.EditJugador.route,
-            arguments = listOf(navArgument("jugadorId") { type = NavType.IntType })
+            route = Screen.EditPlayer.route,
+            arguments = listOf(navArgument("playerId") { type = NavType.IntType })
         ) { backStackEntry ->
-            val jugadorIdArg = backStackEntry.arguments?.getInt("jugadorId") ?: -1
-            val jugadorId = if (jugadorIdArg == -1) null else jugadorIdArg
+            val playerIdArg = backStackEntry.arguments?.getInt("playerId") ?: -1
+            val playerId = if (playerIdArg == -1) null else playerIdArg
 
+            // Aquí iría tu pantalla de edición de Player
         }
 
+        // Edit Partida
         composable(
             route = Screen.EditPartida.route,
             arguments = listOf(navArgument("partidaId") { type = NavType.IntType })
@@ -93,6 +93,7 @@ fun RegistroNavHost(
             val partidaIdArg = backStackEntry.arguments?.getInt("partidaId") ?: -1
             val partidaId = if (partidaIdArg == -1) null else partidaIdArg
 
+            // Aquí iría tu pantalla de edición de Partida
         }
     }
 }

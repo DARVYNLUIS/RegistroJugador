@@ -7,9 +7,11 @@ import dagger.hilt.components.SingletonComponent
 import edu.ucne.registrojugador.data.repository.GameRepositoryImpl
 import edu.ucne.registrojugador.data.repository.JugadorRepositoryImpl
 import edu.ucne.registrojugador.data.repository.PartidaRepositoryImpl
+import edu.ucne.registrojugador.data.repository.PlayerRepositoryImpl
 import edu.ucne.registrojugador.domain.jugador.repository.GameRepository
 import edu.ucne.registrojugador.domain.jugador.repository.JugadorRepository
 import edu.ucne.registrojugador.domain.jugador.repository.PartidaRepository
+import edu.ucne.registrojugador.domain.jugador.repository.PlayerRepository
 import javax.inject.Singleton
 
 
@@ -26,6 +28,10 @@ abstract class RepositoryModule {
     abstract fun bindJugadorRepository(
         impl: JugadorRepositoryImpl
     ): JugadorRepository
+    @Binds
+    abstract fun bindPlayerRepository(
+        impl: PlayerRepositoryImpl
+    ): PlayerRepository
 
     @Binds
     abstract fun bindPartidaRepository(
