@@ -40,8 +40,7 @@ fun ListJugadorScreen(
                 items(state.jugadores) { jugador ->
                     JugadorCard(
                         jugador = jugador,
-                        onEdit = { onNavigateToEdit(jugador.jugadorId) },
-                        onDelete = { /* eliminar jugador */ }
+                        onEdit = { onNavigateToEdit(jugador.JugadorId ?: 0) },                        onDelete = { /* eliminar jugador */ }
                     )
                 }
             }

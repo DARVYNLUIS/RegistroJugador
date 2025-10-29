@@ -22,9 +22,9 @@ class JugadorRepositoryImpl@Inject constructor(
     override suspend fun getJugador(id: Int): Jugador? =
         dao.getById(id)?.toDomain()
 
-    override suspend fun upsert(jugador: Jugador): Int {
+    override suspend fun upsert(jugador: Jugador): Int? {
         dao.upsert(jugador.toEntity())
-        return jugador.jugadorId
+        return jugador.JugadorId
     }
 
     override suspend fun delete(id: Int) {

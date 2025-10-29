@@ -58,7 +58,7 @@ class EditJugadorViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             isNew = false,
-                            jugadorId = jugador.jugadorId,
+                            jugadorId = jugador.JugadorId,
                             nombres = jugador.nombres,
                             partidas = jugador.partidas.toString()
                         )
@@ -102,14 +102,11 @@ class EditJugadorViewModel @Inject constructor(
                 // Correctly get the validated number after a successful check
                 val partidasInt = currentState.partidas.toInt()
 
-                // Crear jugador a guardar
                 val jugador = Jugador(
-                    jugadorId = currentState.jugadorId ?: 0,
+                    JugadorId = currentState.jugadorId ?: 0,
                     nombres = currentState.nombres,
-                    partidas = partidasInt
                 )
 
-                // Verificar duplicado
                 val duplicateResult = upsertJugadorUseCase.checkDuplicate(jugador)
                 if (duplicateResult.isFailure) {
                     _state.update {
@@ -121,7 +118,6 @@ class EditJugadorViewModel @Inject constructor(
                     return@launch
                 }
 
-                // Guardar jugador
                 upsertJugadorUseCase(jugador)
                     .onFailure { ex ->
                         _state.update { it.copy(isSaving = false, nombresError = ex.message) }

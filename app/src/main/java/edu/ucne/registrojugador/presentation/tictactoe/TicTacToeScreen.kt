@@ -37,6 +37,7 @@ fun TicTacToeScreen(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Campo para ID de partida
         Row(verticalAlignment = Alignment.CenterVertically) {
             OutlinedTextField(
                 value = partidaIdInput,
@@ -48,32 +49,34 @@ fun TicTacToeScreen(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Button(onClick = {
+                if (partidaIdInput.isNotEmpty()) {
+                    val p1 = Jugador(JugadorId = 1, nombres = "Jugador 1")
+                    val p2 = Jugador(JugadorId = 2, nombres = "Jugador 2")
+                    gameViewModel.startGame(p1, p2, partidaIdInput.toInt())
+                }
             }) {
-                Text("Refrescar")
+                Text("Iniciar")
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        val jugadoresMap = state.jugadores.associateBy { it.jugadorId }
+        // Estado del juego
+        val jugadoresMap = state.jugadores.associateBy { it.JugadorId }
         val currentPlayerName = state.currentPlayerId?.let { jugadoresMap[it]?.nombres } ?: "—"
         val statusText = when {
-            state.winnerId != null -> " ¡Ganador: ${jugadoresMap[state.winnerId]?.nombres}!"
-            state.isDraw -> " ¡Empate!"
+            state.winnerId != null -> "¡Ganador: ${jugadoresMap[state.winnerId]?.nombres}!"
+            state.isDraw -> "¡Empate!"
             else -> "Turno de: $currentPlayerName"
         }
 
-        Text(
-            text = statusText,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
-        )
-
+        Text(text = statusText, fontSize = 24.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Tablero
         GameBoard(
             board = state.board,
-            jugadoresMap = jugadoresMap,
+            jugadoresMap = jugadoresMap as Map<Int, Jugador?>,
             player1Id = state.player1Id,
             player2Id = state.player2Id
         ) { index ->
@@ -82,7 +85,6 @@ fun TicTacToeScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 🔹 Botones
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -158,9 +160,10 @@ fun BoardCell(
             .size(100.dp)
             .padding(4.dp)
             .background(Color.LightGray)
-            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
-                onClick()
-            },
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { onClick() },
         contentAlignment = Alignment.Center
     ) {
         Text(display, fontSize = 48.sp, fontWeight = FontWeight.Bold, color = color)

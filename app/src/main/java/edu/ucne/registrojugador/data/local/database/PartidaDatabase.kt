@@ -13,7 +13,7 @@ import edu.ucne.registrojugador.data.local.entities.PartidaEntity
 
 @Database(
     entities = [JugadorEntity::class, PartidaEntity::class, MovimientoEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
