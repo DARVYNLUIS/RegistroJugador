@@ -5,7 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.registrojugador.data.api.RetrofitClient
-import edu.ucne.registrojugador.data.local.dto.Movimiento
+import edu.ucne.registrojugador.data.local.dto.MovimientoDto
+import edu.ucne.registrojugador.domain.jugador.model.Movimiento
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,7 +42,16 @@ class MovimientosViewModel @Inject constructor() : ViewModel() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, message = null) }
             try {
-                val response = RetrofitClient.apiService.postMovimiento(movimiento)
+                // Convertir el dominio a DTO
+                val dto = MovimientoDto(
+                    partidaId = movimiento.partidaId,
+                    jugador = movimiento.jugador,
+                    posicionFila = movimiento.posicionFila,
+                    posicionColumna = movimiento.posicionColumna
+                )
+
+                val response = RetrofitClient.apiService.postMovimiento(dto)
+
                 if (response.isSuccessful) {
                     _state.update {
                         it.copy(
@@ -68,7 +78,6 @@ class MovimientosViewModel @Inject constructor() : ViewModel() {
             }
         }
     }
-
     fun clearMessage() {
         _state.update { it.copy(message = null) }
     }
