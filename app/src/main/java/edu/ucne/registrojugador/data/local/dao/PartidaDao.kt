@@ -20,4 +20,10 @@ interface PartidaDao {
 
     @Query("SELECT * FROM partidas WHERE partidaId = :id LIMIT 1")
     suspend fun getPartidaById(id: Int): PartidaEntity?
+
+
+    @Query("SELECT * FROM partidas")
+        suspend fun getAllPartidas(): List<PartidaEntity>
+
+
 }

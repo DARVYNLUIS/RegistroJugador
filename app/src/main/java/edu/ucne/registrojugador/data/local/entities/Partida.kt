@@ -8,9 +8,9 @@ import androidx.room.PrimaryKey
 data class PartidaEntity(
     @PrimaryKey(autoGenerate = true)
     val partidaId: Int = 0,
-    val fecha: String?,
     val jugador1Id: Int,
     val jugador2Id: Int,
+    val fecha: String?,
     val ganadorId: Int? = null,
     val esFinalizada: Boolean = false
 )

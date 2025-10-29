@@ -1,9 +1,9 @@
 package edu.ucne.registrojugador.data.api
 
 
-import edu.ucne.registrojugador.data.local.dto.Movimiento
+import edu.ucne.registrojugador.data.local.dto.MovimientoDto
 import edu.ucne.registrojugador.data.local.dto.PartidaDto
-import okhttp3.Response
+import edu.ucne.registrojugador.domain.jugador.model.Movimiento
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -20,5 +20,5 @@ interface ApiService {
     suspend fun getMovimientos(@Path("partidaId") partidaId: Int): List<Movimiento>
 
     @POST("Movimientos")
-    suspend fun postMovimiento(@Body movimiento: Movimiento): retrofit2.Response<Unit>
+    suspend fun postMovimiento(@Body movimiento: MovimientoDto): retrofit2.Response<Unit>
 }

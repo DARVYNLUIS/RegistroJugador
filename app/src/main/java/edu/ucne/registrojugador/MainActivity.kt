@@ -20,7 +20,7 @@ import kotlinx.coroutines.MainScope
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val scope: CoroutineScope = MainScope()  // <-- Agregado
+    private val scope: CoroutineScope = MainScope()
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,7 +42,7 @@ class MainActivity : ComponentActivity() {
         val navController = rememberNavController()
         RegistroNavHost(
             navController = navController,
-            scope = scope,          // <-- Pasar scope
+            scope = scope,
             modifier = modifier
         )
     }

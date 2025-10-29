@@ -1,22 +1,25 @@
 package edu.ucne.registrojugador.data.local.database
 
-import androidx.room.Database
-import androidx.room.RoomDatabase
-import androidx.room.Room
 import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
 import edu.ucne.registrojugador.data.local.dao.JugadorDao
+import edu.ucne.registrojugador.data.local.dao.MovimientoDao
 import edu.ucne.registrojugador.data.local.dao.PartidaDao
 import edu.ucne.registrojugador.data.local.entities.JugadorEntity
+import edu.ucne.registrojugador.data.local.entities.MovimientoEntity
 import edu.ucne.registrojugador.data.local.entities.PartidaEntity
 
 @Database(
-    entities = [JugadorEntity::class, PartidaEntity::class],
-    version = 2, // <- Incrementa la versión
+    entities = [JugadorEntity::class, PartidaEntity::class, MovimientoEntity::class],
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun jugadorDao(): JugadorDao
     abstract fun partidaDao(): PartidaDao
+    abstract fun movimientoDao(): MovimientoDao
 
     companion object {
         @Volatile
@@ -29,7 +32,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "app_database"
                 )
-                    .fallbackToDestructiveMigration() // <- Borra la DB vieja si hay conflicto de versión
+                    .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance
