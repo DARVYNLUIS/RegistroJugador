@@ -2,7 +2,7 @@ package edu.ucne.registrojugador.domain.jugador.usecase.partidaUseCase
 
 
 import edu.ucne.registrojugador.domain.jugador.repository.GameRepository
-import edu.ucne.registrojugador.data.local.dto.Movimiento
+import edu.ucne.registrojugador.domain.jugador.model.Movimiento
 import javax.inject.Inject
 
 class GetMovimientosUseCase @Inject constructor(
