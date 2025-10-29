@@ -2,7 +2,7 @@ package edu.ucne.registrojugador.domain.jugador.repository
 
 
 
-import edu.ucne.registrojugador.data.local.dto.Movimiento
+import edu.ucne.registrojugador.domain.jugador.model.Movimiento
 import edu.ucne.registrojugador.domain.jugador.model.Partida
 
 
