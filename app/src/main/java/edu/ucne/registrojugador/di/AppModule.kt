@@ -2,64 +2,46 @@ package edu.ucne.registrojugador.di
 
 import android.content.Context
 import androidx.room.Room
+import com.google.firebase.appdistribution.gradle.ApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import edu.ucne.registrojugador.data.local.dao.JugadorDao
-import edu.ucne.registrojugador.data.local.database.JugadorDatabase
-import edu.ucne.registrojugador.data.repository.JugadorRepositoryImpl
-import edu.ucne.registrojugador.domain.jugador.repository.JugadorRepository
-import edu.ucne.registrojugador.domain.jugador.usecase.DeleteJugadorUseCase
-import edu.ucne.registrojugador.domain.jugador.usecase.GetJugadorUseCase
-import edu.ucne.registrojugador.domain.jugador.usecase.ObserveJugadorUseCase
-import edu.ucne.registrojugador.domain.jugador.usecase.UpsertJugadorUseCase
+import edu.ucne.registrojugador.data.local.dao.PartidaDao
+import edu.ucne.registrojugador.data.local.database.AppDatabase
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
-@Module
+@Module(includes = [RepositoryModule::class])
 object AppModule {
 
     @Provides
     @Singleton
-    fun provideJugadorDb(@ApplicationContext appContext: Context) =
+    fun provideAppDatabase(@ApplicationContext appContext: Context) =
         Room.databaseBuilder(
             appContext,
-            JugadorDatabase::class.java,
-            "Jugadores.db"
+            AppDatabase::class.java,
+            "RegistroJugador.db"
         ).fallbackToDestructiveMigration()
             .build()
 
     @Provides
-    fun provideJugadorDao(jugadorDatabase: JugadorDatabase ) = jugadorDatabase.JugadorDao()
+    @Singleton
+    fun provideJugadorDao(db: AppDatabase): JugadorDao = db.jugadorDao()
 
     @Provides
     @Singleton
-    fun provideGetJugadorUseCase(jugadorRepository: JugadorRepository) : GetJugadorUseCase{
-        return GetJugadorUseCase(jugadorRepository)
-    }
-    @Provides
-    @Singleton
-    fun provideObserveJugadorUseCase(jugadorRepository: JugadorRepository) : ObserveJugadorUseCase{
-        return ObserveJugadorUseCase(jugadorRepository)
-    }
-    @Provides
-    @Singleton
-    fun provideUpsertJugadorUseCase(jugadorRepository: JugadorRepository) : UpsertJugadorUseCase{
-        return UpsertJugadorUseCase(jugadorRepository)
-    }
-    @Provides
-    @Singleton
-    fun provideDeleteJugadorUseCase(jugadorRepository: JugadorRepository) : DeleteJugadorUseCase{
-        return DeleteJugadorUseCase(jugadorRepository)
-    }
+    fun providePartidaDao(db: AppDatabase): PartidaDao = db.partidaDao()
+
+
 
     @Provides
     @Singleton
-    fun provideJugadorRepository(jugadorDao: JugadorDao): JugadorRepository{
-        return JugadorRepositoryImpl(jugadorDao)
-    }
-
+    fun provideApiService(retrofit: Retrofit): ApiService =
+        retrofit.create(ApiService::class.java)
 }
-
